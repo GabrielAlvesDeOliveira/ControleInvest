@@ -118,9 +118,20 @@ int validar_cpf(char cpf[15]){
     return 1;
 }
 
+int validar_telefone(Telefone a){
+    int aux=a.numero/pow(10,7);
+    if(11<=a.DDD&&a.DDD<=91){
+        if ((aux>=1 && aux<=9) || (aux >= 91 && aux <= 99)){
+            return 1;
+        }
+    }
+    return 0;
+}
+
 int main()
 {
-    printf("hello world");
+    Telefone fone = {11, 912345678};
+    printf("%d", validar_telefone(fone));
 
     return 0;
 }
