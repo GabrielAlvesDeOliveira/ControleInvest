@@ -1,0 +1,21 @@
+int logaritmo(float a, float b){ /*funcao auxiliar para validar_telefone*/
+    return ceil(log(a)/log(b));
+    }
+int validar_telefone(Telefone a){ /*retorna 1 se valido, 0 se invalido*/
+    if(11<=a.DDD&&a.DDD<=99){
+        if(logaritmo(a.numero,10)==9||logaritmo(a.numero,10)==8){
+            if(a.numero/(pow(10,logaritmo(a.numero,10)))){
+                return 1;
+            }
+        }
+    }
+    return 0;
+}
+
+int validar_data(Data a){ /*retorna 1 se valido, 0 se invalido*/
+    if(1<=a.dia&&a.dia<=30&&1<=a.mes&&a.mes<=12&&1900<=a.ano&&a.ano<=2023){
+        return 1;
+    } else{
+        return 0;
+    }
+}
