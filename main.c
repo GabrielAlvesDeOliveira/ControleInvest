@@ -120,8 +120,7 @@ int validar_cpf(char cpf[15]){
 
 int main()
 {
-    int valido = validar_cpf("444.934.918-09");
-    printf("%d", valido);
+    printf("hello world");
 
     return 0;
 }
