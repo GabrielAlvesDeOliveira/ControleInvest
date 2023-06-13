@@ -1,0 +1,22 @@
+int validar_telefone(Telefone a){
+    int aux=a.numero/pow(10,8);
+    if(11<=a.DDD&&a.DDD<=91){
+        if (aux==0||aux==9){
+            return 1;
+        }
+    }
+    return 0;
+}
+
+int validar_data(Data a){
+    if(1<=a.dia&&a.dia<=30){
+        if(1<=a.mes&&a.mes<=12){
+            if(1900<=a.ano&&a.ano<=2023){
+                return 1;
+                
+            }
+        }
+    } else{
+        return 0;
+    }
+}
