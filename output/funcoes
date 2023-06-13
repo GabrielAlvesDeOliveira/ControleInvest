@@ -2,7 +2,7 @@ int logaritmo(float a, float b){ /*funcao auxiliar para validar_telefone*/
     return ceil(log(a)/log(b));
     }
 int validar_telefone(Telefone a){ /*retorna 1 se valido, 0 se invalido*/
-    if(11<=a.DDD&&a.DDD<=99){
+    if(11<=a.DDD&&a.DDD<=91){
         if(logaritmo(a.numero,10)==9||logaritmo(a.numero,10)==8){
             if(a.numero/(pow(10,logaritmo(a.numero,10)))){
                 return 1;
