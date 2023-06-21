@@ -146,10 +146,14 @@ Transacao comprar_investimento(int id, Cliente c, Investimento i){
     transacao.idTransacao = id;
     transacao.cliente = c;
     transacao.investimento = i;
-    transacao.dataAplicacao = {19, 06, 2023};
+    transacao.dataAplicacao.dia = 19;
+    transacao.dataAplicacao.mes = 06;
+    transacao.dataAplicacao.ano = 2023;
     printf("quanto gostaria de investir nessa ação: ");
     scanf("%f", &transacao.valorAplicacao);
-    transacao.dataResgate = {0, 0, 0};
+    transacao.dataResgate.dia = 0;
+    transacao.dataAplicacao.mes = 0;
+    transacao.dataAplicacao.ano = 0;
     transacao.valorResgate = 0.0;
     return transacao;
 }
@@ -276,7 +280,8 @@ void excluir_cliente(char cpf[]){
 int main()
 {
     Investimento investimentos[30];
-    int count = 0, texto, id_transacao = 0;
+    char cpf_cliente[15];
+    int count = 0, texto, id_transacao = 0, id_investimento = 0;
 
     
     while(1){
@@ -307,12 +312,47 @@ int main()
             investimentos[i] = cadastrar_invenstimento();
         }
        }
-       if(texto == 5){
+       if(texto == 5){ 
+            int n = sizeof(investimentos)/sizeof(investimentos[0]);
+            for(int index = 0; index < n; index++){
+                if(investimentos[index].ativo == 'S') printf("ID: %d | Tipo de aplicação: %d | emissor: %s | taxa: %f\n", index, investimentos[index].tipoAplicacao, investimentos[index].emissor, investimentos[index].taxa);
+            }
             
-            // printf("");
+            char cpf_formatado[15];
+            printf("Digite o cpf do cliente: ");
+            getchar();
+            fgets(cpf_cliente, 15, stdin);
 
-            // comprar_investimento(id_transacao, );
-            // id_transacao++;
+            for(int i=0; i<3; i++){
+                cpf_formatado[i]=cpf_cliente[i];
+            }
+            for(int i=4; i<7; i++){
+                cpf_formatado[i]=cpf_cliente[i];
+            }
+            for(int i=8; i<11; i++){
+                cpf_formatado[i]=cpf_cliente[i];
+            }
+            for(int i=12; i<14; i++){
+                cpf_formatado[i]=cpf_cliente[i];
+            }
+            cpf_formatado[3]='.';
+            cpf_formatado[7]='.';
+            cpf_formatado[11]='-';
+            
+            if (validar_cpf(cpf_formatado)==0){
+                printf("CPF inválido");
+            } 
+            
+            for(int q=0; q<numero_de_clientes; q++){
+                if(strcmp(clientes[q].CPF, cpf_formatado)==0){
+                    printf("Digite o id de investimento: ");
+                    scanf("%d", &id_investimento);
+                    comprar_investimento(id_transacao, clientes[q], investimentos[id_investimento]);
+                    investimentos[id_investimento].ativo = 'N';
+                    id_transacao++;
+                }
+            }
+
        }
    }
 
