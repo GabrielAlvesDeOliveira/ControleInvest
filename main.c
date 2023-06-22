@@ -1,8 +1,11 @@
 /******************************************************************************
 Grupo 1;
 Aluno 1: Emily Vitorya de Moura;
+RA....1: 2575337;
 Aluno 2: Gabriel Alves de Oliveira;
+RA....2: 2575353;
 Aluno 3: Pedro Henrique Sauné;
+RA....3: 2564572;
 Turma: C11;
 Projeto Final;
 *******************************************************************************/
@@ -80,40 +83,42 @@ Data criar_data(void){
 }
 
 int validar_cpf(char cpf[15]){
-    int ncpf[11]={0,0,0,0,0,0,0,0,0,0,0};
-    int num=0;
-    for(int i=0; i<3; i++){
-        ncpf[i]=cpf[i]-48;
-    }
-    for(int i=4; i<7; i++){
-        ncpf[i-1]=cpf[i]-48;
-    }
-    for(int i=8; i<11; i++){
-        ncpf[i-2]=cpf[i]-48;
-    }
-    for (int i=0; i<9; i++){
-        num+=(ncpf[i])*(i+1);
-    }
-    num=num%11;
-    if(num<2){
-        num=0;
-    }
-    if(num!=cpf[12]-48){
-        return 0;
-    } else{
-        ncpf[9]=num;
-        num=0;
-        for (int i=0; i<9; i++){
-            num+=(ncpf[i+1])*(10-i);
+    int ncpf[11];
+    int k=0, num=0, dif_dig=1;
+    ncpf[0]=cpf[0]-'0';
+    ncpf[1]=cpf[1]-'0';
+    ncpf[2]=cpf[2]-'0';
+    ncpf[3]=cpf[4]-'0';
+    ncpf[4]=cpf[5]-'0';
+    ncpf[5]=cpf[6]-'0';
+    ncpf[6]=cpf[8]-'0';
+    ncpf[7]=cpf[9]-'0';
+    ncpf[8]=cpf[10]-'0';
+    ncpf[9]=cpf[12]-'0';
+    ncpf[10]=cpf[13]-'0';
+    ncpf[11]=cpf[14]-'0';
+    for(int l=0; l<11; l++){
+        if(ncpf[l]!=ncpf[0]){
+            dif_dig*=0;
         }
-        num=num%11;
-        num=11-num;
-        if(num!=cpf[13]-48){
+    }
+    for(int q=0; q<9; q++){
+        num+=ncpf[q]*(10-q);
+    }
+    num=((num*10)%11)%10;
+    if(num!=ncpf[9]||(dif_dig!=0)){
+        return 0;
+    }else{
+        num=0;
+        for(int q=0; q<10; q++){
+        num+=ncpf[q]*(11-q);
+        }
+        num=((num*10)%11)%10;
+        if(num!=ncpf[10]){
             return 0;
         }else{
-            return 1;
+            return 1;}
         }
-    }
 }
 
 int validar_telefone(Telefone a){
@@ -126,7 +131,7 @@ int validar_telefone(Telefone a){
     return 0;
 }
 
-Investimento cadastrar_invenstimento(void){
+Investimento cadastrar_investimento(void){
     Investimento investimento;
     
     getchar();
@@ -229,8 +234,7 @@ void Criar_cliente (void){
 
 void exibir_clientes(){
     for(int i=0; i<numero_de_clientes; i++){
-        printf("Nome.: %s | Telefone.: %d %ld | CPF.: %s | ", clientes[i].nome, clientes[i].fone.DDD, clientes[i].fone.numero, clientes[i].CPF);
-        exibir_data(clientes[i].nascimento);
+        printf("Nome.: %s | Telefone.: %d %ld ", clientes[i].nome, clientes[i].fone.DDD, clientes[i].fone.numero);
     }
 }
 
@@ -286,7 +290,7 @@ int main()
     
     while(1){
         alfabetica(clientes);
-        printf("Digite\n1 para cadastrar um novo cliente.\n2 para exibir todos os clientes.\n3 para excluir um cliente (pelo CPF).\n4 para criar investimentos\n5 Compra Investimentos\n\n");
+        printf("Digite\n1 Para cadastrar um novo cliente.\n2 Para exibir todos os clientes.\n3 Para excluir um cliente (pelo CPF).\n4 Para criar investimentos\n5 Compra Investimentos\n6 Desativar investimentos\n7 Vender investimentos\n\n");
         scanf("%d", &texto);
         if (texto==1){
            Criar_cliente();
@@ -309,7 +313,7 @@ int main()
         } while (count < 1 || count > 30);
 
         for(int i = 0; i < count; i++){
-            investimentos[i] = cadastrar_invenstimento();
+            investimentos[i] = cadastrar_investimento();
         }
        }
        if(texto == 5){ 
@@ -348,11 +352,24 @@ int main()
                     printf("Digite o id de investimento: ");
                     scanf("%d", &id_investimento);
                     comprar_investimento(id_transacao, clientes[q], investimentos[id_investimento]);
-                    investimentos[id_investimento].ativo = 'N';
                     id_transacao++;
                 }
             }
-
+       }
+       if( texto == 6) {
+           int n = sizeof(investimentos)/sizeof(investimentos[0]);
+           for(int index = 0; index < n; index++){
+                if(investimentos[index].ativo == 'S') printf("ID: %d | Tipo de aplicação: %d | emissor: %s | taxa: %f\n", index, investimentos[index].tipoAplicacao, investimentos[index].emissor, investimentos[index].taxa);
+            }
+            printf("\nDigite o ID do investimento desejado para desativar\n");
+            scanf("%d", &id_investimento);
+            
+            for(int index = 0; index < n; index++){
+                if(index == id_investimento) investimentos[index].ativo = 'N';
+            }
+       }
+       if(texto == 7){
+           
        }
    }
 
