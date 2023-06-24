@@ -48,7 +48,6 @@ typedef struct transacao{
     float valorAplicacao;
     Data dataResgate;
     float valorResgate;
-    
 } Transacao;
 
 Cliente cliente_nulo={"~","000.000.000-00",{0,0},{0,0,0}};
@@ -154,7 +153,7 @@ Transacao comprar_investimento(int id, Cliente c, Investimento i){
     transacao.dataAplicacao.dia = 19;
     transacao.dataAplicacao.mes = 06;
     transacao.dataAplicacao.ano = 2023;
-    printf("quanto gostaria de investir nessa ação: ");
+    printf("Quanto gostaria de investir nessa ação: ");
     scanf("%f", &transacao.valorAplicacao);
     transacao.dataResgate.dia = 0;
     transacao.dataAplicacao.mes = 0;
@@ -281,16 +280,44 @@ void excluir_cliente(char cpf[]){
     }
 }
 
+int dias_entre_datas(Data p, Data q){
+    return (-(p.ano*365+p.mes*30+p.dia)+(q.ano*365+q.mes*30+q.dia));
+}
+
+float lucro_real(int lucro, int num, int dif_data){
+    float aux=0;
+    if (num==1){return 0;}
+    if (num==2||num==3){
+        if(dif_data<=180){
+            aux+=lucro*225;
+        }
+        if(181<dif_data&&dif_data<=360){
+            aux+=lucro*200;
+        }
+        if(361<dif_data&&dif_data<=720){
+            aux+=lucro*175;
+        }
+        if(720<dif_data){
+            aux+=lucro*150;
+        }
+        if(num==3){
+            aux+=lucro*(dif_data/365)*10;
+        }
+        return lucro-aux/1000;
+    }
+}
+
 int main()
 {
     Investimento investimentos[30];
+    Transacao transacao[100];
     char cpf_cliente[15];
     int count = 0, texto, id_transacao = 0, id_investimento = 0;
 
     
     while(1){
         alfabetica(clientes);
-        printf("Digite\n1 Para cadastrar um novo cliente.\n2 Para exibir todos os clientes.\n3 Para excluir um cliente (pelo CPF).\n4 Para criar investimentos\n5 Compra Investimentos\n6 Desativar investimentos\n7 Vender investimentos\n\n");
+        printf("\nDigite\n1 Para cadastrar um novo cliente.\n2 Para exibir todos os clientes.\n3 Para excluir um cliente (pelo CPF).\n4 Para criar investimentos\n5 Comprar Investimentos\n6 Desativar investimentos\n7 Vender investimentos\n\n");
         scanf("%d", &texto);
         if (texto==1){
            Criar_cliente();
@@ -351,7 +378,7 @@ int main()
                 if(strcmp(clientes[q].CPF, cpf_formatado)==0){
                     printf("Digite o id de investimento: ");
                     scanf("%d", &id_investimento);
-                    comprar_investimento(id_transacao, clientes[q], investimentos[id_investimento]);
+                    transacao[id_transacao] = comprar_investimento(id_transacao, clientes[q], investimentos[id_investimento]);
                     id_transacao++;
                 }
             }
@@ -369,7 +396,31 @@ int main()
             }
        }
        if(texto == 7){
+           int length_transacao = sizeof(transacao)/sizeof(transacao[0]), id = 0;
+           for(int index = 0; index < length_transacao; index++){
+              if(transacao[index].valorAplicacao >= 1 && transacao[index].dataAplicacao.dia > 0){
+                  printf("\nId da transacao: %d", transacao[index].idTransacao);
+                  printf("\nCpf do cliente: %s", transacao[index].cliente.CPF);
+                  printf("\nCódigo de aplicação: %d", transacao[index].investimento.tipoAplicacao);
+                  printf("\nTaxa: %f", transacao[index].investimento.taxa);
+                  printf("\nValor investido: %f", transacao[index].valorAplicacao);
+                  printf("\n---------------------------------------------------------------------------------\n");
+              }
+           }
            
+           printf("\nDigite o ID da transacao que gostaria de vender: ");
+           scanf("%d", &id);
+           
+           for(int index = 0; index < length_transacao; index++){
+              if(transacao[index].idTransacao == id){
+                  printf("\nId da transacao: %d", transacao[index].idTransacao);
+                  printf("\nCpf do cliente: %s", transacao[index].cliente.CPF);
+                  printf("\nCódigo de aplicação: %d", transacao[index].investimento.tipoAplicacao);
+                  printf("\nTaxa: %f", transacao[index].investimento.taxa);
+                  printf("\nValor investido: %f", transacao[index].valorAplicacao);
+                  printf("\n---------------------------------------------------------------------------------\n");
+              }
+           }
        }
    }
 
