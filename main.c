@@ -50,19 +50,27 @@ typedef struct transacao{
     float valorResgate;
 } Transacao;
 
-Cliente cliente_nulo={"~","000.000.000-00",{0,0},{0,0,0}};
+Cliente cliente_nulo={"~~","000.000.000-00",{0,0},{0,0,0}};
 Cliente clientes[100];
 int numero_de_clientes=0;
 
-int validar_data(Data a){
-    if(1<=a.dia&&a.dia<=30){
-        if(1<=a.mes&&a.mes<=12){
-            if(1900<=a.ano&&a.ano<=2023) return 1;
+int validar_data(Data data){
+    if(1<=data.dia&&data.dia<=30){
+        if(1<=data.mes&&data.mes<=12){
+            if(1900<=data.ano&&data.ano<=2023) return 1;
         }
     }
     return 0;
 }
 
+int validar_data_resgate(Data resgate){
+    if(1<=resgate.dia&&resgate.dia<=30){
+        if(1<=resgate.mes&&resgate.mes<=12){
+            if(resgate.ano>=2023) return 1;
+        }
+    }
+    return 0;
+}
 void exibir_data(Data a){
     printf("Data:");
     printf(a.dia<10 ? "0%d/" : "%d/", a.dia);
@@ -153,7 +161,7 @@ Transacao comprar_investimento(int id, Cliente c, Investimento i){
     transacao.dataAplicacao.dia = 19;
     transacao.dataAplicacao.mes = 06;
     transacao.dataAplicacao.ano = 2023;
-    printf("Quanto gostaria de investir nessa ação: ");
+    printf("quanto gostaria de investir nessa ação: ");
     scanf("%f", &transacao.valorAplicacao);
     transacao.dataResgate.dia = 0;
     transacao.dataAplicacao.mes = 0;
@@ -284,27 +292,49 @@ int dias_entre_datas(Data p, Data q){
     return (-(p.ano*365+p.mes*30+p.dia)+(q.ano*365+q.mes*30+q.dia));
 }
 
-float lucro_real(int lucro, int num, int dif_data){
-    float aux=0;
-    if (num==1){return 0;}
-    if (num==2||num==3){
-        if(dif_data<=180){
-            aux+=lucro*225;
-        }
-        if(181<dif_data&&dif_data<=360){
-            aux+=lucro*200;
-        }
-        if(361<dif_data&&dif_data<=720){
-            aux+=lucro*175;
-        }
-        if(720<dif_data){
-            aux+=lucro*150;
-        }
-        if(num==3){
-            aux+=lucro*(dif_data/365)*10;
-        }
-        return lucro-aux/1000;
+float lucro_real(float valor, float taxa, int num, int dif_data){
+    
+    int multiplicador_anual = dif_data / 365;
+    float imposto = 0, lucro = 0;
+    switch(num){
+        case 1:
+            lucro = valor * (taxa / 100);
+            break;
+        case 2:
+            lucro = valor * (taxa / 100);
+            if(dif_data<=180){
+                imposto = lucro * 0.225;
+            }
+            if(181<dif_data&&dif_data<=360){
+                imposto = lucro * 0.2;
+            }
+            if(361<dif_data&&dif_data<=720){
+                imposto = lucro * 0.175;
+            }
+            if(720<dif_data){
+                imposto = lucro * 0.15;
+            }
+            break;
+        case 3:
+            lucro = valor * ((taxa / 100) + 0.01);
+            if(dif_data<=180){
+                imposto = lucro * 0.225;
+            }
+            if(181<dif_data&&dif_data<=360){
+                imposto = lucro * 0.2;
+            }
+            if(361<dif_data&&dif_data<=720){
+                imposto = lucro * 0.175;
+            }
+            if(720<dif_data){
+                imposto = lucro * 0.15;
+            }
+            break;
+        default:
+            return 0;
     }
+    
+    return lucro - imposto;
 }
 
 int main()
@@ -312,12 +342,12 @@ int main()
     Investimento investimentos[30];
     Transacao transacao[100];
     char cpf_cliente[15];
+    char cpf_formatado[15];
     int count = 0, texto, id_transacao = 0, id_investimento = 0;
-
-    
+    float montante_usuario = 0.0, lci = 0.0, cdb = 0.0, fundos = 0.0;
     while(1){
         alfabetica(clientes);
-        printf("\nDigite\n1 Para cadastrar um novo cliente.\n2 Para exibir todos os clientes.\n3 Para excluir um cliente (pelo CPF).\n4 Para criar investimentos\n5 Comprar Investimentos\n6 Desativar investimentos\n7 Vender investimentos\n\n");
+        printf("\nDigite\n1 Para cadastrar um novo cliente.\n2 Para exibir todos os clientes.\n3 Para excluir um cliente (pelo CPF).\n4 Para criar investimentos\n5 Comprar Investimentos\n6 Desativar investimentos\n7 Vender investimentos\n8 Mostrar Quanto que o cliente já resgatou\n9 Mostrar quanto de dinheiro possui cada investimento\n\n");
         scanf("%d", &texto);
         if (texto==1){
            Criar_cliente();
@@ -344,12 +374,15 @@ int main()
         }
        }
        if(texto == 5){ 
-            int n = sizeof(investimentos)/sizeof(investimentos[0]);
+            int n = sizeof(investimentos)/sizeof(investimentos[0]), qtd = 0;
             for(int index = 0; index < n; index++){
-                if(investimentos[index].ativo == 'S') printf("ID: %d | Tipo de aplicação: %d | emissor: %s | taxa: %f\n", index, investimentos[index].tipoAplicacao, investimentos[index].emissor, investimentos[index].taxa);
+                if(investimentos[index].ativo == 'S') {
+                    printf("ID: %d | Tipo de aplicação: %d | emissor: %s | taxa: %f\n", index, investimentos[index].tipoAplicacao, investimentos[index].emissor, investimentos[index].taxa);
+                    qtd++;
+                }
             }
             
-            char cpf_formatado[15];
+            if(qtd > 0){
             printf("Digite o cpf do cliente: ");
             getchar();
             fgets(cpf_cliente, 15, stdin);
@@ -378,9 +411,13 @@ int main()
                 if(strcmp(clientes[q].CPF, cpf_formatado)==0){
                     printf("Digite o id de investimento: ");
                     scanf("%d", &id_investimento);
-                    transacao[id_transacao] = comprar_investimento(id_transacao, clientes[q], investimentos[id_investimento]);
+                    transacao[id_transacao] = comprar_investimento(id_transacao+1, clientes[q], investimentos[id_investimento]);
                     id_transacao++;
                 }
+            }
+            qtd = 0;
+            }else {
+                printf("\nSem Investimentos para comprar\n");
             }
        }
        if( texto == 6) {
@@ -395,32 +432,106 @@ int main()
                 if(index == id_investimento) investimentos[index].ativo = 'N';
             }
        }
-       if(texto == 7){
-           int length_transacao = sizeof(transacao)/sizeof(transacao[0]), id = 0;
+       if( texto == 7){
+           size_t length_transacao = sizeof(transacao)/sizeof(transacao[0]);
+           int id = 0, diferenca_data = 0, qtd_investimentos = 0;
+           float lucro = 0.0;
+           Data d;
            for(int index = 0; index < length_transacao; index++){
-              if(transacao[index].valorAplicacao >= 1 && transacao[index].dataAplicacao.dia > 0){
+              if(transacao[index].valorAplicacao >= 1 && transacao[index].dataAplicacao.dia >= 1 && transacao[index].investimento.taxa >= 0.1 && transacao[index].dataResgate.dia <= 0){
                   printf("\nId da transacao: %d", transacao[index].idTransacao);
                   printf("\nCpf do cliente: %s", transacao[index].cliente.CPF);
                   printf("\nCódigo de aplicação: %d", transacao[index].investimento.tipoAplicacao);
                   printf("\nTaxa: %f", transacao[index].investimento.taxa);
                   printf("\nValor investido: %f", transacao[index].valorAplicacao);
                   printf("\n---------------------------------------------------------------------------------\n");
+                  qtd_investimentos++;
               }
            }
-           
+           if(qtd_investimentos > 0){
+               
            printf("\nDigite o ID da transacao que gostaria de vender: ");
            scanf("%d", &id);
-           
+            do {
+                    printf("digite o dia do resgate: ");
+                    scanf("%d", &d.dia);
+                    printf("digite o mes do resgate: ");
+                    scanf("%d", &d.mes);
+                    printf("digite o ano do resgate: ");
+                    scanf("%d", &d.ano);
+            } while(validar_data_resgate(d) == 0);
            for(int index = 0; index < length_transacao; index++){
-              if(transacao[index].idTransacao == id){
-                  printf("\nId da transacao: %d", transacao[index].idTransacao);
-                  printf("\nCpf do cliente: %s", transacao[index].cliente.CPF);
-                  printf("\nCódigo de aplicação: %d", transacao[index].investimento.tipoAplicacao);
-                  printf("\nTaxa: %f", transacao[index].investimento.taxa);
-                  printf("\nValor investido: %f", transacao[index].valorAplicacao);
-                  printf("\n---------------------------------------------------------------------------------\n");
+              if(transacao[index].valorAplicacao >= 1 && transacao[index].dataAplicacao.dia >= 1){
+                diferenca_data = dias_entre_datas(transacao[index].dataAplicacao, d);
+                transacao[index].dataResgate.dia = d.dia;
+                transacao[index].dataResgate.mes = d.mes;
+                transacao[index].dataResgate.ano = d.ano;
+                transacao[index].valorResgate = transacao[index].valorAplicacao + lucro_real(transacao[index].valorAplicacao, transacao[index].investimento.taxa, transacao[index].investimento.tipoAplicacao, diferenca_data);
+                }
+            }
+           qtd_investimentos = 0;
+           }else {
+               printf("\nSem transacoes cadastradas!\n");
+           }
+    }
+       if(texto == 8){
+           printf("Digite o cpf do cliente: ");
+            getchar();
+            fgets(cpf_cliente, 15, stdin);
+
+            for(int i=0; i<3; i++){
+                cpf_formatado[i]=cpf_cliente[i];
+            }
+            for(int i=4; i<7; i++){
+                cpf_formatado[i]=cpf_cliente[i];
+            }
+            for(int i=8; i<11; i++){
+                cpf_formatado[i]=cpf_cliente[i];
+            }
+            for(int i=12; i<14; i++){
+                cpf_formatado[i]=cpf_cliente[i];
+            }
+            cpf_formatado[3]='.';
+            cpf_formatado[7]='.';
+            cpf_formatado[11]='-';
+            
+            if (validar_cpf(cpf_formatado)==0){
+                printf("CPF inválido");
+            }
+            
+            for(int q=0; q<numero_de_clientes; q++){
+                if(strcmp(clientes[q].CPF, cpf_formatado)==0){
+                    for(int index = 0;index < (sizeof(transacao)/sizeof(transacao[0])); index++){
+                        if(strcmp(transacao[index].cliente.CPF, cpf_formatado) == 0 && transacao[index].investimento.taxa >=0.1 && transacao[index].valorResgate > 0.0 && transacao[index].dataResgate.dia >= 1){
+                           montante_usuario += transacao[index].valorResgate;
+                        }
+                    }
+                    
+                    if(montante_usuario == 0) printf("esse usuário ainda não tem nenhum valor resgatado ou valor investido");
+                    else printf("Valor Total: %.2f", montante_usuario);
+                }
+            }
+            montante_usuario = 0;
+       }
+       if(texto == 9){
+        size_t length_transacao = sizeof(transacao)/sizeof(transacao[0]);
+        for(int index = 0; index < length_transacao; index++){
+              if(transacao[index].valorAplicacao >= 1 && transacao[index].dataAplicacao.dia >= 1 && transacao[index].investimento.taxa >= 0.1 && transacao[index].valorResgate == 0.0){
+                  if(transacao[index].investimento.tipoAplicacao == 1){ lci += transacao[index].valorAplicacao; }
+                  if(transacao[index].investimento.tipoAplicacao == 2){ cdb += transacao[index].valorAplicacao; }
+                  if(transacao[index].investimento.tipoAplicacao == 3){ fundos += transacao[index].valorAplicacao; }
               }
            }
+        if(lci == 0 && cdb == 0 && fundos == 0){
+            printf("Ainda não há nenhum tipo de ativo!");
+        }else{
+            printf("\nLCI: R$%.2f", lci);
+            printf("\nCDB: R$%.2f", cdb);
+            printf("\nFundos: R$%.2f\n", fundos);
+        }
+        lci = 0;
+        cdb = 0;
+        fundos = 0;
        }
    }
 
