@@ -50,6 +50,7 @@ typedef struct transacao{
     float valorResgate;
 } Transacao;
 
+Data data_atual={25,06,2023};
 Cliente cliente_nulo={"~~","000.000.000-00",{0,0},{0,0,0}};
 Cliente clientes[100];
 int numero_de_clientes=0;
@@ -66,7 +67,7 @@ int validar_data(Data data){
 int validar_data_resgate(Data resgate){
     if(1<=resgate.dia&&resgate.dia<=30){
         if(1<=resgate.mes&&resgate.mes<=12){
-            if(resgate.ano>=2023) return 1;
+            if(resgate.ano>=data_atual.ano) return 1;
         }
     }
     return 0;
@@ -143,10 +144,10 @@ Investimento cadastrar_investimento(void){
     
     getchar();
     printf("Banco emissor: ");
-    gets(investimento.emissor);
+    fgets(investimento.emissor, 100, stdin);
     printf("Qual o tipo de aplicação (1 / 2 / 3): ");
     scanf("%d", &investimento.tipoAplicacao);
-    printf("Qual a porcentagem da taxa sobre o investimento: ");
+    printf("Qual a porcentagem da taxa sobre o investimento: (sem %%, apenas o número)");
     scanf("%f", &investimento.taxa);
     investimento.ativo = 'S';
     printf("\n\n");
@@ -158,14 +159,12 @@ Transacao comprar_investimento(int id, Cliente c, Investimento i){
     transacao.idTransacao = id;
     transacao.cliente = c;
     transacao.investimento = i;
-    transacao.dataAplicacao.dia = 19;
-    transacao.dataAplicacao.mes = 06;
-    transacao.dataAplicacao.ano = 2023;
+    transacao.dataAplicacao = data_atual;
     printf("quanto gostaria de investir nessa ação: ");
     scanf("%f", &transacao.valorAplicacao);
     transacao.dataResgate.dia = 0;
-    transacao.dataAplicacao.mes = 0;
-    transacao.dataAplicacao.ano = 0;
+    transacao.dataResgate.mes = 0;
+    transacao.dataResgate.ano = 0;
     transacao.valorResgate = 0.0;
     return transacao;
 }
@@ -377,13 +376,13 @@ int main()
             int n = sizeof(investimentos)/sizeof(investimentos[0]), qtd = 0;
             for(int index = 0; index < n; index++){
                 if(investimentos[index].ativo == 'S') {
-                    printf("ID: %d | Tipo de aplicação: %d | emissor: %s | taxa: %f\n", index, investimentos[index].tipoAplicacao, investimentos[index].emissor, investimentos[index].taxa);
+                    printf("ID: %d | Tipo de aplicação: %d | emissor: %s | taxa: %.2f\n", index, investimentos[index].tipoAplicacao, investimentos[index].emissor, investimentos[index].taxa);
                     qtd++;
                 }
             }
             
             if(qtd > 0){
-            printf("Digite o cpf do cliente: ");
+            printf("Digite o CPF do cliente: ");
             getchar();
             fgets(cpf_cliente, 15, stdin);
 
